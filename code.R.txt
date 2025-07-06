@@ -1,0 +1,134 @@
+diabetes_data_upload$`visual blurring`=factor(diabetes_data_upload$`visual blurring`,levels = c("Yes","No"))
+diabetes_data_upload$class=factor(diabetes_data_upload$class,levels = c("Positive","Negative"))
+tbl=table(diabetes_data_upload$`visual blurring`,diabetes_data_upload$class)
+print(tbl)
+prop.table(tbl,margin =2)
+result=chisq.test(tbl)
+result
+pi1=175/233
+pi2=145/287
+diff=pi1-pi2
+diff
+rr=pi1/pi2
+rr
+result$residuals
+result$stdres
+pi1
+pi2
+or=(175*142)/(58 *145)
+or
+ggplot(diabetes_data_upload,aes(x=`visual blurring`,fill=class))+
+  geom_bar(position = "fill")+
+  scale_y_continuous(labels = percent_format())+
+  labs(title = "The Realtionship Between class and sudden weight loss ",
+       x="visual blurring",
+       y="Percentage",fill="Class")+
+  theme_minimal()
+cramersV(tbl)
+diabetes_data_upload$weakness=factor(diabetes_data_upload$weakness,levels = c("Yes","No"))
+diabetes_data_upload$class=factor(diabetes_data_upload$class,levels = c("Positive","Negative"))
+tbl=table(diabetes_data_upload$weakness,diabetes_data_upload$class)
+print(tbl)
+prop.table(tbl,margin =2)
+result=chisq.test(tbl)
+result
+pi1=218/305
+pi2=102/215
+diff=pi1-pi2
+diff
+rr=pi1/pi2
+rr
+result$residuals
+result$stdres
+pi1
+pi2
+or=(218*113)/(87 *102)
+or
+ggplot(diabetes_data_upload,aes(x=weakness,fill=class))+
+  geom_bar(position = "fill")+
+  scale_y_continuous(labels = percent_format())+
+  labs(title = "The Realtionship Between weakness  ",
+       x="weakness ",
+       y="Percentage",fill="Class")+
+  theme_minimal()
+cramersV(tbl)
+diabetes_data_upload$Alopecia=factor(diabetes_data_upload$Alopecia,levels = c("Yes","No"))
+diabetes_data_upload$class=factor(diabetes_data_upload$class,levels = c("Positive","Negative"))
+tbl=table(diabetes_data_upload$Alopecia,diabetes_data_upload$class)
+print(tbl)
+prop.table(tbl,margin =2)
+result=chisq.test(tbl)
+result
+pi1=78/179
+pi2=242/341
+diff=pi1-pi2
+diff
+rr=pi1/pi2
+rr
+result$residuals
+result$stdres
+pi1
+pi2
+or=(78*99)/(242 *101)
+or
+ggplot(diabetes_data_upload,aes(x=Alopecia,fill=class))+
+  geom_bar(position = "fill")+
+  scale_y_continuous(labels = percent_format())+
+  labs(title = "The Realtionship Between class and Alopecia  ",
+       x="Alopecia",
+       y="Percentage",fill="Class")+
+  theme_minimal()
+cramersV(tbl)
+data=diabetes_data_upload
+names(data)
+data$Polyuria<- factor(data$Polyuria)
+data$`sudden weight loss` <-factor(data$`sudden weight loss`)
+data$weakness <- factor(data$weakness)
+data$`visual blurring` <- factor(data$`visual blurring`)
+data$Alopecia<- factor(data$Alopecia)
+data$class <- factor(data$class, levels = c("Negative", "Positive"))  # هذا 
+model=glm(class~Polyuria+`sudden weight loss`+weakness+`visual blurring`+Alopecia,
+          data = data,family = binomial)
+summary(model)
+data$predicted_prob <- predict(model, type = "response")
+
+data$predicted_class <- ifelse(data$predicted_prob >= 0.5, "Positive", "Negative")
+
+data$predicted_class <- factor(data$predicted_class, levels = c("Negative", "Positive"))
+head(data)
+# مصفوفة الالتباس
+conf_mat <- table(Actual = data$class, Predicted = data$predicted_class)
+print(conf_mat)
+
+# دقة النموذج
+accuracy <- mean(data$Class == data$predicted_class)
+print(paste("Accuracy:", round(accuracy * 100, 2), "%"))
+# تحميل مكتبة pROC إذا مش عندك
+install.packages("pROC")
+library(pROC)
+
+# منحنى ROC
+roc_curve <- roc(data$class, data$predicted_prob)
+plot(roc_curve, col = "#2C3E50", main = "ROC Curve - Diabetes Prediction")
+
+# حساب AUC
+auc(roc_curve)
+
+new_patient <- data[1, ]
+new_patient$Polyuria <- "Yes"
+new_patient$sudden_weight_loss <- "No"
+new_patient$weakness <- "Yes"
+new_patient$visual_blurring <- "No"
+new_patient$Alopecia <- "Yes"
+prob <- predict(model, newdata = new_patient, type = "response")
+print(prob)
+
+predicted_class <- ifelse(prob >= 0.5, "Positive", "Negative")
+print(predicted_class)
+pred_probs <- predict(model, newdata = data, type = "response")
+pred_class <- ifelse(pred_probs >= 0.5, "Positive", "Negative")
+data$Prediction <- pred_class
+data$Predicted_Probability <- round(pred_probs, 4)
+head(data[, c("Prediction", "Predicted_Probability")])
+write.csv(data, "data_with_predictions.csv", row.names = FALSE)
+getwd()
